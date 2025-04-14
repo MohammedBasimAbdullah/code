@@ -1,174 +1,70 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.textinput import TextInput
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.core.window import Window
 
-# C extensions
-*.so
+Window.clearcolor = (0.1, 0.1, 0.1, 1)
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+class CaesarScreen(Screen):
+    def __init__(self, **kwargs):
+        super(CaesarScreen, self).__init__(**kwargs)
+        layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+        self.title = Label(text='Decryption Caesar Cipher', font_size=28, color=(0.6, 0.9, 1, 1), size_hint_y=None, height=50)
+        self.instruction = Label(text='Enter the ciphertext below. It will be decrypted using all possible keys.',
+                                 font_size=16, color=(1, 1, 1, 1), size_hint_y=None, height=40)
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+        self.input_text = TextInput(hint_text='Type the encrypted text here...',
+                                    multiline=True, size_hint_y=0.3, background_color=(1, 1, 1, 0.1),
+                                    foreground_color=(1, 1, 1, 1), cursor_color=(1, 1, 1, 1), padding=10)
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+        decode_button = Button(text='Decrypt Now',
+                               background_color=(0.2, 0.6, 1, 1), font_size=20, size_hint_y=None, height=50)
+        decode_button.bind(on_press=self.decode)
 
-# Translations
-*.mo
-*.pot
+        self.result_label = Label(size_hint_y=None, text_size=(Window.width - 40, None),
+                                  halign='right', valign='top', font_size=16, color=(1, 1, 1, 1))
+        self.result_label.bind(texture_size=self.resize_label)
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+        scroll = ScrollView(size_hint=(1, 1))
+        scroll.add_widget(self.result_label)
 
-# Flask stuff:
-instance/
-.webassets-cache
+        layout.add_widget(self.title)
+        layout.add_widget(self.instruction)
+        layout.add_widget(self.input_text)
+        layout.add_widget(decode_button)
+        layout.add_widget(scroll)
 
-# Scrapy stuff:
-.scrapy
+        self.add_widget(layout)
 
-# Sphinx documentation
-docs/_build/
+    def resize_label(self, instance, size):
+        self.result_label.height = size[1]
 
-# PyBuilder
-.pybuilder/
-target/
+    def decode(self, instance):
+        ciphertext = self.input_text.text
+        results = ''
+        for key in range(1, 26):
+            decrypted = ''
+            for char in ciphertext:
+                if char.isalpha():
+                    base = ord('A') if char.isupper() else ord('a')
+                    decrypted += chr((ord(char) - base - key) % 26 + base)
+                else:
+                    decrypted += char
+            results += f'[key{key}]  {decrypted}\n\n'
+        self.result_label.text = results
 
-# Jupyter Notebook
-.ipynb_checkpoints
 
-# IPython
-profile_default/
-ipython_config.py
+class CaesarDecoderApp(App):
+    def build(self):
+        sm = ScreenManager()
+        sm.add_widget(CaesarScreen(name='main'))
+        return sm
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
-
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
-
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
-.pdm.toml
-.pdm-python
-.pdm-build/
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-
-# Ruff stuff:
-.ruff_cache/
-
-# PyPI configuration file
-.pypirc
+if __name__ == '__main__':
+    CaesarDecoderApp().run()
